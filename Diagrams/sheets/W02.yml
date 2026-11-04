@@ -1,0 +1,87 @@
+# Purpose: Example wiring sheet W02 — engine kill circuit (fire suppression relay).
+# Version: v1 (example)
+# Scope: EXAMPLE — demonstrates a multi-contact relay circuit with a bypass switch.
+# Architecture: Diagrams system. build.py validates endpoints against register/devices.yml
+#   and renders out/W02.html (ladder, wire list, terminal landings, checks, test).
+
+id: W02
+title: Engine kill — fire suppression relay and software stop
+version: v1 (example)
+group: A (Pi-free; install and test with no software)
+purpose: >
+  A fire suppression system discharge stops both engines in copper, with no software
+  dependency. The same engine run circuit also carries the software kill (flow/smoke
+  stop on S3-R1), which can be bypassed at the helm. The bypass is a separate relay
+  so a single-pole rocker at the helm controls it.
+slides: []
+refs: [wiki/Architecture.md (fail-safe direction)]
+
+rungs:
+  - title: Engine ECU emergency-stop loop (sense level) — CLOSED = RUN
+    start: {at: "ROT:C", label: "ECU EMGSW via harness"}
+    elements:
+      - {type: switch_nc, dev: ROT, a: C, b: NC, label: "red rotary E-stop"}
+      - {type: nc, dev: S3, a: R1-COM, b: R1-NC, label: "S3-R1 software stop",
+         bypass: {type: "no", dev: R34, a: "14", b: "11", label: "R34 NO bypass (helm rocker)"}}
+      - {type: nc, dev: R29, a: "11", b: "12", label: "R29 pole 1 fire relay"}
+    end: {at: "HARN:K67A", label: "K67A into engine harness"}
+    note: "Signal-level current — this is the ECU's emergency stop SENSE loop, not the ECU power feed. Any contact opening stops the engine and the stop latches until cleared. Never interrupt ECU power."
+  - title: Fire relay coil — energised by the suppression system on discharge
+    start: {at: "SUP:OUT", label: "Suppression system relay output (+)"}
+    elements:
+      - {type: coil, dev: R29, a: A1, b: A2, label: "R29 coil (24 V)"}
+    end: {at: "PWR:0V", label: "24 V (-)"}
+    note: "How R29 is driven depends on your fire suppression system. Some provide a dry contact that closes on discharge (wire it to switch +24 V to the coil); others provide a powered output. Check your system's manual. Add a 1N4007 flyback diode across A1/A2 (band to A1 = +)."
+  - title: Fire discharge sense to DI
+    start: {at: "PWR:0V", label: "0 V bus"}
+    elements:
+      - {type: "no", dev: R29, a: "31", b: "34", label: "R29 pole 3 NO"}
+    end: {at: "S1:DI5", label: "S1-DI5 discharge sense"}
+  - title: Bypass rocker — R34 coil (parallel with indicator relay R31)
+    start: {at: "HLM:24V", label: "Helm panel +24 V (1 A fuse)"}
+    elements:
+      - {type: switch_no, dev: SW-BY, a: "PLUS", b: "OUT", label: "STOP BYPASS rocker (helm)"}
+      - {type: coil, dev: R34, a: A1, b: A2, label: "R34 coil (bypass relay)"}
+    end: {at: "PWR:0V", label: "24 V (-)"}
+    note: "Fail-safe: lose the rocker's 24 V and R34 drops — the software stop (S3-R1) is back in force. R34's contact sits only across S3-R1: the red E-stop and the fire relay are never bypassed."
+  - title: Bypass sense to DI
+    start: {at: "PWR:0V", label: "0 V bus"}
+    elements:
+      - {type: "no", dev: R31, a: "11", b: "14", label: "R31 NO (indicator)"}
+    end: {at: "S2:DI7", label: "S2-DI7 bypass active sense"}
+
+wires:
+  - {id: W02-01, a: "ROT:NC", b: "S3:R1-COM", awg: "18", run: "engine room to nav station"}
+  - {id: W02-02, a: "S3:R1-NC", b: "R29:11", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-03, a: "R29:12", b: "HARN:K67A", awg: "18", run: "nav station to engine room"}
+  - {id: W02-04, a: "SUP:OUT", b: "R29:A1", awg: "18", run: "engine room to nav station"}
+  - {id: W02-05, a: "R29:A2", b: "PWR:0V", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-06, a: "PWR:0V", b: "R29:31", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-07, a: "R29:34", b: "S1:DI5", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-08, a: "HLM:24V", b: "SW-BY:PLUS", awg: "18", run: "helm panel"}
+  - {id: W02-09, a: "SW-BY:OUT", b: "R34:A1", awg: "16", run: "helm to nav station"}
+  - {id: W02-10, a: "R34:A2", b: "PWR:0V", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-11, a: "S3:R1-NC", b: "R34:11", awg: "18", run: "DIN rail jumper", note: "R34 bridges S3-R1 ONLY"}
+  - {id: W02-12, a: "R34:14", b: "S3:R1-COM", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-13, a: "SW-BY:OUT", b: "R31:A1", awg: "18", run: "DIN rail jumper", note: "R31 coil in parallel with R34 for indication"}
+  - {id: W02-14, a: "R31:A2", b: "PWR:0V", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-15, a: "PWR:0V", b: "R31:11", awg: "18", run: "DIN rail jumper"}
+  - {id: W02-16, a: "R31:14", b: "S2:DI7", awg: "18", run: "DIN rail jumper"}
+
+cables:
+  C1: "Engine room to nav station, 18 AWG twisted pair (W02-01, W02-03). An ECU sense line — route away from the alternator and starter cables; fire sleeve in the engine room."
+  C2: "Helm to nav station (W02-09): the switched 24 V to R34 + spare. Route through the engine room; fire sleeve."
+  C3: "Engine room to nav station (W02-04): suppression system relay output to R29 coil. Fire sleeve."
+
+checks:
+  - "Confirm your engine's emergency stop is a SENSE loop (signal level), not a power feed. Check the engine manual."
+  - "R29 flyback diode: 1N4007 across A1/A2, band to A1 (the + side). Prevents back-EMF damage to the suppression system relay."
+  - "Twin ferrules where two wires share a screw: S3 R1-COM, S3 R1-NC (W02-11 and W02-12 on those nodes)."
+  - "Heat-shrink labels at both ends of every wire: the W02-nn ID."
+  - "Fire sleeve on all engine room runs — a fire can melt insulation and SHORT a kill wire, preventing the stop."
+
+test:
+  - "Bench: press R29 test button — contacts 11-12 open, 31-34 close (meter)."
+  - "Engine running at the dock: press R29 test button — engine stops. Release; clear the E-stop per the engine manual; restart."
+  - "S1-DI5 reads closed while R29 test button is held. S2-DI7 follows the bypass rocker."
+  - "Software stop: with engine running, trigger S3-R1 (from your rules engine or manual coil write) — engine stops. Bypass rocker ON — engine restarts with S3-R1 still active."

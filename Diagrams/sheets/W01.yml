@@ -1,0 +1,56 @@
+# Purpose: Example wiring sheet W01 — bilge pump feed ahead of the breaker panel.
+# Version: v1 (example)
+# Scope: EXAMPLE — demonstrates the YAML wiring sheet format for a simple circuit.
+# Architecture: Diagrams system. build.py validates endpoints against register/devices.yml
+#   and renders out/W01.html (ladder, wire list, terminal landings, checks, test).
+
+id: W01
+title: Bilge pump feed ahead of the breaker panel
+version: v1 (example)
+group: A (install first — no software dependency)
+purpose: >
+  Feed the automatic bilge pump directly from the battery bus, ahead of the main breaker
+  panel, so the pump runs even with the panel switched off. A dedicated fuse protects the
+  wire; the pump's own float switch controls it. The automation system monitors pump-run
+  via a DI (current transformer or relay sense contact) so it can alert the crew to
+  prolonged or frequent cycling.
+slides: []
+refs: [wiki/Architecture.md (bilge pump philosophy)]
+
+rungs:
+  - title: Bilge pump +24 V feed from the battery bus through a dedicated fuse
+    start: {at: "BAT:POS", label: "Battery bus +24 V (always live)"}
+    elements:
+      - {type: coil, dev: F-BP, a: IN, b: OUT, label: "F-BP 15 A ATC fuse"}
+    end: {at: "BP1:FEED", label: "Bilge pump 1 power input"}
+    note: "The fuse protects the wire, not the pump (the pump has its own internal fuse or breaker). Size the fuse for the wire gauge: 15 A for 14 AWG, 20 A for 12 AWG. The run from the battery to the fuse should be as short as possible."
+  - title: Bilge pump run sense — current transformer on the feed wire
+    start: {at: "PWR:0V", label: "0 V bus"}
+    elements:
+      - {type: "no", dev: CT1, a: "NO", b: "COM", label: "CT1 current sense relay"}
+    end: {at: "S1:DI3", label: "S1-DI3 bilge run sense"}
+    note: "A split-core CT around the pump's feed wire closes a dry contact when current flows. The DI reads pump-running without breaking into the pump circuit. Alternative: a relay whose coil is in series with the pump (adds a failure point)."
+
+wires:
+  - {id: W01-01, a: "BAT:POS", b: "F-BP:IN", awg: "14", run: "battery bay to fuse holder"}
+  - {id: W01-02, a: "F-BP:OUT", b: "BP1:FEED", awg: "14", run: "fuse holder to bilge"}
+  - {id: W01-03, a: "BP1:GND", b: "PWR:0V", awg: "14", run: "bilge to ground bus", note: "pump return to the nearest ground bus (not the battery negative directly)"}
+  - {id: W01-04, a: "PWR:0V", b: "CT1:NO", awg: "18", run: "DIN rail jumper"}
+  - {id: W01-05, a: "CT1:COM", b: "S1:DI3", awg: "18", run: "DIN rail jumper"}
+
+cables:
+  C1: "Battery bay to fuse holder, 14 AWG pair (+ and -), fire sleeve in the engine room."
+  C2: "Fuse holder to bilge, 14 AWG, routed clear of the exhaust and any chafe points."
+
+checks:
+  - "Fuse rating: confirm the ATC fuse is rated for your DC voltage (24 V or 12 V). Not all ATC fuses are DC-rated."
+  - "Wire gauge: 14 AWG for runs under 10 feet at 15 A; 12 AWG for longer runs. Use the ABYC tables."
+  - "Heat-shrink labels at both ends of every wire: the W01-nn ID."
+  - "CT1 split-core: clamp around ONE conductor only (not the pair). Verify the CT's amp rating covers the pump's draw."
+  - "Ground bus: the pump return lands on the nearest ABYC-compliant ground bus, not a random bolt."
+
+test:
+  - "Meter: +24 V (or +12 V) at BP1:FEED with the fuse in; 0 V with the fuse pulled."
+  - "Float switch test: raise the float; pump runs and water moves; lower the float; pump stops."
+  - "DI sense: with the pump running, S1-DI3 reads closed (use your IO tool to verify). Pump off = DI open."
+  - "Sustained-run test: hold the float up for 60 seconds; verify the automation alerts after the configured threshold."

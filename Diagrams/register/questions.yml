@@ -1,0 +1,16 @@
+# Purpose: Open questions that may move a design decision or a wire.
+# Version: v1 (example)
+# Scope: EXAMPLE — track your own open questions here.
+
+Q1:
+  who: owner
+  ask: "What is the fire suppression system's relay output — dry contact or powered?"
+  why: "Determines how R29's coil is driven (switched 24 V vs. direct from the system)."
+  recommend: "Check the suppression system manual. Most marine systems provide a dry contact."
+
+Q2:
+  who: owner
+  ask: "Is the engine ECU emergency stop loop signal-level or power-level current?"
+  why: "Signal-level current means relay contacts with low minimum load may not make reliable contact. Measure the loop current."
+  recommend: "Measure voltage across the open E-stop switch and the loop current with a clamp meter."
+  known: "Most modern marine diesels use a signal-level sense loop for the emergency stop, not a power interrupt."

@@ -1,0 +1,180 @@
+# Purpose: Device register — every device a wiring sheet lands a wire on, with terminals
+#   as marked on the part. build.py validates that every endpoint DEVICE:TERMINAL exists here.
+# Version: v1 (example)
+# Scope: EXAMPLE — replace with your boat's actual devices and terminal labels.
+
+# --- Power sources ---
+BAT:
+  name: Battery bus (+24 V)
+  part: "bus bar"
+  where: battery bay
+  status: existing
+  terminals:
+    POS: "positive bus"
+    NEG: "negative bus"
+
+PWR:
+  name: DC power distribution
+  part: "ground bus / 0 V rail"
+  where: nav station DIN rail
+  status: existing
+  bus: true
+  terminals:
+    0V: "0 V distribution bus"
+
+HLM:
+  name: Helm panel power
+  part: "fused 24 V supply at the helm"
+  where: helm pedestal
+  status: existing
+  terminals:
+    24V: "helm +24 V (1 A fuse)"
+
+# --- Fuses ---
+F-BP:
+  name: Bilge pump fuse
+  part: "ATC fuse holder, 15 A"
+  where: nav station or battery bay
+  status: new
+  terminals:
+    IN: "line in (from battery bus)"
+    OUT: "load out (to pump)"
+
+# --- Sensors ---
+CT1:
+  name: Bilge pump current transformer
+  part: "split-core CT with dry contact output"
+  where: near bilge pump feed wire
+  status: new
+  terminals:
+    "NO": "normally open (closes on current)"
+    COM: "common"
+
+BP1:
+  name: Bilge pump 1
+  part: "your bilge pump (Rule, Whale, etc.)"
+  where: bilge
+  status: existing
+  terminals:
+    FEED: "power input (+)"
+    GND: "ground return (-)"
+
+# --- Engine kill devices ---
+ROT:
+  name: Engine red rotary E-stop
+  part: "existing emergency stop switch"
+  where: engine room or helm
+  status: existing
+  terminals:
+    C: "common"
+    NC: "normally closed"
+
+HARN:
+  name: Engine wiring harness
+  part: "engine harness connector"
+  where: engine room
+  status: existing
+  terminals:
+    K67A: "ECU EMGSW sense return"
+
+SUP:
+  name: Fire suppression system relay
+  part: "your suppression system's relay output"
+  where: engine room
+  status: existing
+  terminals:
+    OUT: "relay output (+ on discharge)"
+
+SW-BY:
+  name: Stop bypass rocker switch
+  part: "single-pole ON/OFF rocker"
+  where: helm panel
+  status: new
+  terminals:
+    PLUS: "feed (+24 V)"
+    OUT: "switched output"
+
+# --- Relays ---
+R29:
+  name: Fire suppression relay
+  part: "Finder 40.31 or equivalent, 24 V coil, 3PDT"
+  where: nav station DIN rail
+  status: new
+  terminals:
+    A1: "coil +"
+    A2: "coil -"
+    "11": "pole 1 common"
+    "12": "pole 1 NC"
+    "14": "pole 1 NO"
+    "21": "pole 2 common"
+    "22": "pole 2 NC"
+    "24": "pole 2 NO"
+    "31": "pole 3 common"
+    "34": "pole 3 NO"
+
+R31:
+  name: Bypass indicator relay
+  part: "HF41F or equivalent slim relay, 24 V coil"
+  where: nav station DIN rail
+  status: new
+  terminals:
+    A1: "coil +"
+    A2: "coil -"
+    "11": "common"
+    "14": "NO"
+
+R34:
+  name: Bypass relay
+  part: "HF41F or equivalent slim relay, 24 V coil"
+  where: nav station DIN rail
+  status: new
+  terminals:
+    A1: "coil +"
+    A2: "coil -"
+    "11": "common"
+    "14": "NO"
+
+# --- Modbus I/O modules (Waveshare IO 8CH) ---
+S1:
+  name: Safety DI module
+  part: "Waveshare Modbus RTU Relay (8CH) or IO 8CH"
+  where: nav station DIN rail
+  address: 4
+  status: new
+  relay_channels: 0
+  terminals:
+    DI1: "digital input 1"
+    DI2: "digital input 2"
+    DI3: "digital input 3"
+    DI4: "digital input 4"
+    DI5: "digital input 5"
+    DI6: "digital input 6"
+    DI7: "digital input 7"
+    DI8: "digital input 8"
+
+S2:
+  name: Control DI module
+  part: "Waveshare Modbus RTU Relay (8CH) or IO 8CH"
+  where: nav station DIN rail
+  address: 2
+  status: new
+  relay_channels: 0
+  terminals:
+    DI1: "digital input 1"
+    DI2: "digital input 2"
+    DI3: "digital input 3"
+    DI4: "digital input 4"
+    DI5: "digital input 5"
+    DI6: "digital input 6"
+    DI7: "digital input 7"
+    DI8: "digital input 8"
+
+S3:
+  name: Relay module (new)
+  part: "Waveshare Modbus RTU Relay (D) 8CH"
+  where: nav station DIN rail
+  address: 3
+  status: new
+  relay_channels: 8
+  terminals:
+    DI1: "digital input 1"

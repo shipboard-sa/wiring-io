@@ -1,0 +1,38 @@
+# Purpose: Relay pool — Modbus relay channel assignments. build.py cross-checks that every
+#   S#-R# a sheet wires matches the channel assigned here.
+# Version: v1 (example)
+# Scope: EXAMPLE — replace with your relay module assignments.
+
+modules:
+  S3:
+    part: "Waveshare Modbus RTU Relay (D) 8CH"
+    power: "24 V DC"
+    latching: "non-latching (de-energised = NC closed, NO open)"
+
+channels:
+  S3-R1:
+    status: assigned
+    function: "software engine stop (flow/smoke)"
+    contact: "NC in the engine ECU EMGSW sense loop"
+    sheet: W02
+  S3-R2:
+    status: spare
+    function: spare
+  S3-R3:
+    status: spare
+    function: spare
+  S3-R4:
+    status: spare
+    function: spare
+  S3-R5:
+    status: spare
+    function: spare
+  S3-R6:
+    status: spare
+    function: spare
+  S3-R7:
+    status: spare
+    function: spare
+  S3-R8:
+    status: spare
+    function: spare
