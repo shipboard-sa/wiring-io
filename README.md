@@ -15,6 +15,10 @@ checklists.
 This repo is part of the [Ship's Automation](https://github.com/shipboard-sa/guide)
 open-source project.
 
+## Architecture
+
+![Wiring architecture](architecture.svg)
+
 ## What this does
 
 - **YAML wiring sheets** — one file per circuit, with ladder rungs, wire lists, cable runs,
