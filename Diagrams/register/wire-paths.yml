@@ -1,0 +1,175 @@
+# Purpose: Master circuit tree — every power, data, and signal path on the boat, organized
+#   by root bus. Grepable: find any wire, device, or fuse by searching this file.
+# Version: v1 (template)
+# Scope: TEMPLATE — replace with your boat's actual circuits. Structure your tree by root
+#   bus (DC, AC, alarm, data, signal, bonding) and nest devices under their feed point.
+# Architecture: Standalone YAML data file. Consumed by build scripts and cross-repo checks.
+#   Do NOT hand-edit generated outputs; fix this file and regenerate.
+
+# ═══════════════════════════════════════════════════════════════
+#  HOW THIS FILE WORKS
+# ═══════════════════════════════════════════════════════════════
+# Each entry is a node in the circuit tree. 'parent' links to the upstream node.
+# Roots have no parent. Leaves are endpoints (devices, terminals, sensors).
+#
+# Fields:
+#   id:       unique node identifier (use a prefix per root: D- for DC, A- for AC, etc.)
+#   parent:   id of the upstream node (omit for roots)
+#   label:    human-readable name
+#   type:     bus | breaker | fuse | terminal | device | wire | connector
+#   rating:   fuse/breaker rating (e.g. "30A")
+#   notes:    free text
+#   status:   existing | new | retired | superseded
+
+roots:
+  # ─── DC DISTRIBUTION ───
+  - id: DC-BUS
+    label: "House DC bus (+24V)"
+    type: bus
+
+  - id: D-BATT
+    parent: DC-BUS
+    label: "Battery bank"
+    type: device
+    notes: "Your battery chemistry and capacity here"
+
+  - id: D-BP
+    parent: DC-BUS
+    label: "Battery protect / disconnect"
+    type: device
+    notes: "Victron BatteryProtect or equivalent"
+
+  - id: D-DIST
+    parent: D-BP
+    label: "Main DC distribution panel"
+    type: terminal
+    notes: "Terminal block or bus bar downstream of the battery protect"
+
+  - id: D-DIST-1
+    parent: D-DIST
+    label: "Pos 1: Bilge pumps"
+    type: breaker
+    rating: "25A"
+
+  - id: D-DIST-2
+    parent: D-DIST
+    label: "Pos 2: Navigation electronics"
+    type: breaker
+    rating: "15A"
+
+  - id: D-DIST-3
+    parent: D-DIST
+    label: "Pos 3: Automation (always-on)"
+    type: fuse
+    rating: "10A"
+    notes: "Feeds the IO modules, sensors, and alarm panel"
+
+  # ─── AC DISTRIBUTION ───
+  - id: AC-BUS
+    label: "AC distribution"
+    type: bus
+
+  - id: A-SHORE
+    parent: AC-BUS
+    label: "Shore power inlet"
+    type: connector
+
+  - id: A-INV
+    parent: AC-BUS
+    label: "Inverter output"
+    type: device
+    notes: "Victron MultiPlus or equivalent"
+
+  - id: A-PANEL
+    parent: AC-BUS
+    label: "AC breaker panel"
+    type: terminal
+
+  # ─── ALARM PANEL ───
+  - id: AL-BUS
+    label: "Alarm panel terminal block"
+    type: bus
+    notes: "Master alarm panel — 24V pull-to-ground"
+
+  - id: AL-1
+    parent: AL-BUS
+    label: "Engine bilge pump"
+    type: terminal
+    notes: "NO — closes to ground on alarm"
+
+  - id: AL-2
+    parent: AL-BUS
+    label: "High water"
+    type: terminal
+    notes: "NO float switch"
+
+  # ─── DATA / COMMS ───
+  - id: DATA
+    label: "Data networks"
+    type: bus
+
+  - id: D-N2K
+    parent: DATA
+    label: "NMEA 2000 backbone"
+    type: bus
+    notes: "Micro-C trunk with tee drops"
+
+  - id: D-N2K-GPS
+    parent: D-N2K
+    label: "GPS receiver"
+    type: device
+
+  - id: D-N2K-WIND
+    parent: D-N2K
+    label: "Wind sensor"
+    type: device
+
+  - id: D-LAN
+    parent: DATA
+    label: "IP / Ethernet network"
+    type: bus
+
+  - id: D-LAN-PI
+    parent: D-LAN
+    label: "Automation controller (Pi)"
+    type: device
+    notes: "192.168.1.21"
+
+  - id: D-RS485
+    parent: DATA
+    label: "Modbus RS-485 bus"
+    type: bus
+    notes: "Gateway → daisy-chain of IO modules"
+
+  # ─── SIGNAL (automation wiring) ───
+  - id: SIGNAL
+    label: "CAMS signal wires"
+    type: bus
+    notes: "Each Wnn sheet gets entries here. S-series wire IDs."
+
+  - id: S-W01
+    parent: SIGNAL
+    label: "W01: Engine kill circuit"
+    type: wire
+
+  - id: S01-01
+    parent: S-W01
+    label: "Fire suppression relay coil +"
+    type: wire
+    notes: "R29:A1"
+
+  # ─── BONDING ───
+  - id: BONDING
+    label: "Bonding system"
+    type: bus
+    notes: "Green wire bonding bus → hull zinc"
+
+  - id: B-BUSBAR
+    parent: BONDING
+    label: "Bonding bus bar"
+    type: terminal
+
+  - id: B-ENGINE
+    parent: B-BUSBAR
+    label: "Engine block bond"
+    type: wire

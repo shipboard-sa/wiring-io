@@ -1,0 +1,88 @@
+# Purpose: OCP (over-current protection) register — every fuse and breaker on the boat.
+# Version: v1 (template)
+# Scope: TEMPLATE — replace with your boat's actual fuses and breakers.
+# Architecture: Standalone YAML data file. Build script (build_ocp_register.py) renders HTML.
+#   Do NOT hand-edit generated outputs; fix this file and regenerate.
+
+# Fields per OCP:
+#   id:         designator (use a scheme: pos number, or F-prefix)
+#   type:       fuse/breaker type (e.g. "ATC blade", "MEGA", "thermal breaker", "fused terminal")
+#   rating:     amperage (e.g. "15A", "60A")
+#   protects:   what this fuse/breaker protects (load description)
+#   feed:       upstream source (e.g. "DC bus bar", "AO fuse block pos 3")
+#   where:      physical location
+#   status:     installed | planned | removed
+#   notes:      optional — wire gauge, trip curve, etc.
+
+# ─── MAIN DC DISTRIBUTION ───
+main_dc:
+  - id: MEGA-1
+    type: "MEGA fuse (bolt-down)"
+    rating: 200A
+    protects: "House loads — main DC bus"
+    feed: "Battery positive bus"
+    where: "battery bay"
+    status: installed
+
+  - id: MAIN-BRK
+    type: "thermal breaker"
+    rating: 40A
+    protects: "Always-on bus — all automation and bilge circuits"
+    feed: "MEGA-1 output"
+    where: "nav station"
+    status: installed
+
+# ─── ALWAYS-ON FUSE BLOCK ───
+ao_block:
+  - id: AO-1
+    type: "ATC blade"
+    rating: 25A
+    protects: "Bilge pumps (all)"
+    feed: "MAIN-BRK output"
+    where: "AO fuse block pos 1"
+    status: installed
+
+  - id: AO-2
+    type: "ATC blade"
+    rating: 10A
+    protects: "Automation controller (Cerbo / monitoring)"
+    feed: "MAIN-BRK output"
+    where: "AO fuse block pos 2"
+    status: installed
+
+  - id: AO-3
+    type: "ATC blade"
+    rating: 5A
+    protects: "Alarm panel + sensors"
+    feed: "MAIN-BRK output"
+    where: "AO fuse block pos 3"
+    status: installed
+
+  - id: AO-4
+    type: "ATC blade"
+    rating: 5A
+    protects: "5V bus (IO modules)"
+    feed: "MAIN-BRK output"
+    where: "AO fuse block pos 4"
+    status: installed
+
+# ─── INLINE FUSES ───
+inline:
+  - id: F-N2K
+    type: "fused terminal (PT 4-FSI/F-LED)"
+    rating: 3A
+    protects: "NMEA 2000 bus power"
+    feed: "12V distribution"
+    where: "nav station"
+    status: installed
+
+  - id: F-VHF
+    type: "ATC blade"
+    rating: 5A
+    protects: "VHF radio (via DC-DC converter)"
+    feed: "AO fuse block"
+    where: "electronics cabinet"
+    status: installed
+
+# Add your fuses and breakers below. Group by location or bus.
+# Every fuse on the boat should be here — not just the automation ones.

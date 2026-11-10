@@ -1,0 +1,126 @@
+# Purpose: Module roster — every device the automation system reads, drives, or monitors.
+# Version: v1 (template)
+# Scope: TEMPLATE — replace with your boat's actual devices. Group by bus type.
+# Architecture: Standalone YAML data file consumed by build scripts and cross-repo checks.
+#   Do NOT hand-edit generated outputs; fix this file and regenerate.
+
+# Fields per module:
+#   id:         short device designator (e.g. S1, CERBO, MPPT-1)
+#   name:       human-readable name
+#   model:      manufacturer and model number
+#   bus:        how the automation controller talks to it (modbus_rtu, modbus_tcp, victron, n2k, ip)
+#   address:    bus address (Modbus slave addr, IP, VE.Direct port, etc.)
+#   where:      physical location on the boat
+#   function:   what it does in one line
+#   status:     live | planned | retired
+#   replaces:   (optional) device ID this one replaced
+
+# ═══════════════════════════════════════════════════════════════
+#  MODBUS RTU (RS-485 bus)
+# ═══════════════════════════════════════════════════════════════
+modbus_rtu:
+  - id: GW
+    name: "Modbus gateway"
+    model: "Waveshare RS485 TO POE ETH (B)"
+    bus: modbus_tcp_gateway
+    address: "192.168.1.10"
+    where: "nav station DIN rail"
+    function: "RS-485 ↔ TCP gateway — the only Modbus master"
+    status: live
+
+  - id: S1
+    name: "Safety DI module"
+    model: "Waveshare Modbus RTU IO 8CH"
+    bus: modbus_rtu
+    address: 4
+    where: "nav station DIN rail"
+    function: "8× digital inputs — fire, engine, flow alarms"
+    status: live
+
+  - id: S2
+    name: "Control DI module"
+    model: "Waveshare Modbus RTU IO 8CH"
+    bus: modbus_rtu
+    address: 2
+    where: "nav station DIN rail"
+    function: "8× digital inputs — dinghy, anchor, AIS, bilge taps"
+    status: live
+
+  - id: S3
+    name: "Relay module"
+    model: "Waveshare Modbus RTU Relay (D) 8CH"
+    bus: modbus_rtu
+    address: 3
+    where: "nav station DIN rail"
+    function: "8× relays + 8× DIs — engine kill, horn, blowers, flow hold-offs"
+    status: live
+
+# ═══════════════════════════════════════════════════════════════
+#  VICTRON (VE.Direct / VE.Bus / VE.Can)
+# ═══════════════════════════════════════════════════════════════
+victron:
+  - id: CERBO
+    name: "Cerbo GX"
+    model: "Victron Cerbo GX"
+    bus: victron
+    address: "192.168.1.8 (MQTT)"
+    where: "nav station"
+    function: "System monitor — MPPT, inverter, battery, tank, temp sensors"
+    status: live
+
+  - id: MULTI
+    name: "Inverter/charger"
+    model: "Victron MultiPlus-II 24/3000/70"
+    bus: ve_bus
+    address: "via Cerbo"
+    where: "engine room"
+    function: "Inverter + shore charger + generator charger"
+    status: live
+
+  - id: MPPT-1
+    name: "Solar charger 1"
+    model: "Victron SmartSolar 150/85"
+    bus: ve_direct
+    address: "Cerbo VE.Direct port 1"
+    where: "nav station"
+    function: "Main solar array charge controller"
+    status: live
+
+# ═══════════════════════════════════════════════════════════════
+#  NMEA 2000
+# ═══════════════════════════════════════════════════════════════
+n2k:
+  - id: AIS
+    name: "AIS transceiver"
+    model: "your AIS model"
+    bus: n2k
+    address: "N2K drop"
+    where: "nav station"
+    function: "AIS transmit/receive — alarm relay hardwired to panel"
+    status: live
+
+  - id: WIND
+    name: "Wind sensor"
+    model: "your wind instrument"
+    bus: n2k
+    address: "N2K drop (via gateway)"
+    where: "masthead"
+    function: "Apparent/true wind speed and angle"
+    status: live
+
+# ═══════════════════════════════════════════════════════════════
+#  IP DEVICES
+# ═══════════════════════════════════════════════════════════════
+ip_devices:
+  - id: ANCHOR-BOX
+    name: "Anchor alarm controller"
+    model: "ESP32-based (custom firmware)"
+    bus: ip
+    address: "192.168.1.242"
+    where: "nav station"
+    function: "Anchor drag detection + automation heartbeat watchdog"
+    status: live
+
+# Add your devices below. Every module the automation reads from
+# or writes to should be here — IO modules, inverters, chargers,
+# sensors, relays, GPS, AIS, wind, depth, etc.

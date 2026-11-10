@@ -1,0 +1,60 @@
+# Purpose: Relay register — every relay in the automation and safety circuits.
+# Version: v1 (template)
+# Scope: TEMPLATE — replace with your boat's actual relays.
+# Architecture: Standalone YAML data file. Build script (build_relay_register.py) renders HTML.
+#   Do NOT hand-edit generated outputs; fix this file and regenerate.
+
+# Fields per relay:
+#   id:         relay designator (R1, R2, ... or your scheme)
+#   type:       relay part number or family (e.g. "Finder 40.31", "HF41F/24-ZS")
+#   coil:       coil voltage (e.g. "24VDC")
+#   contacts:   contact configuration (e.g. "SPDT", "3PDT", "SPST-NO")
+#   driver:     what energizes the coil (e.g. "S3-R1", "Cerbo R1", "direct +24V")
+#   function:   what this relay does in plain language
+#   circuit:    which wiring sheet (e.g. "W01", "W14")
+#   where:      physical location
+#   status:     live | built | wired | planned | retired
+
+relays:
+  - id: R1
+    type: "Finder 40.31 (3PDT, 10A)"
+    coil: 24VDC
+    contacts: 3PDT
+    driver: "fire suppression system output"
+    function: "Engine kill on fire — breaks both engine EMGSW loops + alarm panel"
+    circuit: W01
+    where: "nav station DIN rail"
+    status: live
+
+  - id: R2
+    type: "HF41F/24-ZS (slim SPDT, 6A)"
+    coil: 24VDC
+    contacts: SPDT
+    driver: "S3-R1 (Modbus relay module)"
+    function: "Engine flow-alarm hold-off — bypasses raw-water alarm during warm-up"
+    circuit: W14
+    where: "nav station DIN rail"
+    status: live
+
+  - id: R3
+    type: "HF41F/24-ZS (slim SPDT, 6A)"
+    coil: 24VDC
+    contacts: SPDT
+    driver: "S2-DO1 (Modbus digital output)"
+    function: "Bilge pump alarm relay — drives alarm panel point"
+    circuit: W21
+    where: "nav station DIN rail"
+    status: planned
+
+  - id: R4
+    type: "Phoenix Contact 2967060 (DIN, SPDT)"
+    coil: 24VDC
+    contacts: SPDT
+    driver: "S3-R4 (Modbus relay module)"
+    function: "Horn override — re-sounds external buzzers from automation"
+    circuit: W08
+    where: "nav station DIN rail"
+    status: live
+
+  # Add your relays below. Include every relay the automation system
+  # drives or monitors, plus any hard-wired safety relays (fire, E-stop).

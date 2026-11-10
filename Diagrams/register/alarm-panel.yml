@@ -1,0 +1,126 @@
+# Purpose: Alarm panel register — every alarm point, its driver, automation readback, and sense type.
+# Version: v1 (template)
+# Scope: TEMPLATE — replace with your boat's actual alarm panel points.
+# Architecture: Standalone YAML data file consumed by build scripts and cross-repo checks.
+#   Do NOT hand-edit generated outputs; fix this file and regenerate.
+
+# ═══════════════════════════════════════════════════════════════
+#  PANEL FACTS
+# ═══════════════════════════════════════════════════════════════
+panel:
+  name: "Master Alarm Panel"
+  description: "Custom alarm panel — 24V pull-to-ground, nav station."
+  supply: "Always-on fused supply (+24V)"
+  ground: "Panel ground bus"
+  input_principle: >
+    24V pull-to-ground. NO = alarm on contact close to ground.
+    NC = alarm on loss of ground (broken wire = alarm).
+  mute: "Latching — clears only when the last alarm clears."
+  buzzer: "External buzzers in parallel, daisy-chained."
+  supervised: false  # Set true if you add end-of-line resistors
+
+# ═══════════════════════════════════════════════════════════════
+#  ALARM POINTS
+# ═══════════════════════════════════════════════════════════════
+# Fields per point:
+#   al:         alarm point designator (AL-1, AL-2, ...)
+#   terminal:   physical terminal number on the alarm panel
+#   function:   what this point monitors
+#   sense:      NO | NC | Comparator
+#   driven_by:  what closes/opens the circuit (sensor, relay, float switch)
+#   pi_reads:   how the automation controller sees this point (DI channel, N2K PGN, MQTT, etc.)
+#   tap_state:  live | not commissioned | no tap (panel-only)
+#   workflows:  automation workflow IDs triggered by this point
+#   status:     as-built | to-be | spare
+
+points:
+  - al: AL-1
+    terminal: 1
+    function: "engine bilge pump running"
+    sense: NO
+    driven_by: "current transformer on bilge pump feed"
+    pi_reads: "S1-DI1 (digital input)"
+    tap_state: live
+    workflows: [WF-111]
+    status: as-built
+
+  - al: AL-2
+    terminal: 2
+    function: "high water alarm"
+    sense: NO
+    driven_by: "float switch in bilge"
+    pi_reads: "S1-DI2 (digital input)"
+    tap_state: live
+    workflows: [WF-101]
+    status: as-built
+
+  - al: AL-3
+    terminal: 3
+    function: "engine raw-water flow"
+    sense: NO
+    driven_by: "paddle flow switch (armed by engine-running relay)"
+    pi_reads: "S1-DI6 (digital input)"
+    tap_state: live
+    workflows: [WF-201]
+    status: as-built
+
+  - al: AL-4
+    terminal: 4
+    function: "fire / heat detection"
+    sense: NO
+    driven_by: "heat detector in engine room"
+    pi_reads: "S1-DI3 (digital input)"
+    tap_state: live
+    workflows: [WF-102]
+    status: as-built
+
+  - al: AL-5
+    terminal: 5
+    function: "smoke detection"
+    sense: NO
+    driven_by: "smoke detector → relay"
+    pi_reads: "S1-DI4 (digital input)"
+    tap_state: live
+    workflows: [WF-103]
+    status: as-built
+
+  - al: AL-6
+    terminal: 6
+    function: "dinghy theft loop"
+    sense: NC
+    driven_by: "NC loop + Arm/Disarm switch"
+    pi_reads: "S2-DI1 (read inverted: true = theft)"
+    tap_state: live
+    workflows: [WF-106]
+    status: as-built
+
+  - al: AL-7
+    terminal: 7
+    function: "anchor drag"
+    sense: NO
+    driven_by: "anchor alarm controller digital output"
+    pi_reads: "S2-DI4 (digital input)"
+    tap_state: live
+    workflows: [WF-107]
+    status: as-built
+
+  - al: AL-8
+    terminal: 8
+    function: "automation heartbeat"
+    sense: NO
+    driven_by: "anchor alarm controller watchdog output"
+    pi_reads: "none (this IS the Pi-dead alarm)"
+    tap_state: live
+    workflows: [WF-004]
+    status: as-built
+
+  # Add your alarm points below. Include every point on your panel,
+  # plus any extension points on a future PCB.
+  # Spare points:
+  # - al: AL-9
+  #   terminal: 9
+  #   function: spare
+  #   sense: NO
+  #   driven_by: unassigned
+  #   pi_reads: unassigned
+  #   status: spare
